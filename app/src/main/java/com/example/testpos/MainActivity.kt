@@ -5,6 +5,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.system.OsConstants.ECONNREFUSED
 import android.util.Log
+import android.view.ActionMode
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
@@ -52,9 +53,9 @@ class MainActivity : AppCompatActivity() {
         var readStan: Int? = null
         var stuckReverse = false
 
-        private val HOST = "192.168.43.24"
+//        private val HOST = "192.168.43.24"
 //        private val HOST = "192.168.233.93";
-//        private val HOST = "192.168.68.165";
+        private val HOST = "192.168.82.93";
         var PORT = 3000
 //        private val HOST = "192.168.43.195"
     //    private val String HOST = "192.168.223.187";
@@ -72,7 +73,55 @@ class MainActivity : AppCompatActivity() {
             output1 = findViewById(R.id.textViewRequest)
             output2 = findViewById(R.id.textViewResponse)
 
+
+    //        Thread{
+    //            val db = Room.databaseBuilder(
+    //                applicationContext,AppDatabase::class.java,"appDB"
+    //            ).build()
+    //
+    //            Log.i("SQLiteDebug","write")
+    //            val reversal = db.reversalDao()
+    //            val item = ReversalEntity("0","123456")
+    //
+    //            reversal.insertAllReversal(item)
+    //
+    //            Log.i("SQLiteDebug","read")
+    //            val reversalList = reversal.getReversal()
+    //
+    //        }
+
+        }
+
+        override fun onStart() {
+            super.onStart()
+            EventBus.getDefault().register(this)
+
+            Thread{
+                accessDatabase()
+                readStan = saleDAO?.getSale()?.STAN
+                Log.i("log_tag","readSTAN : " + readStan)
+//                Log.i("log_tag","readSTAN : " + readStan)
+
+            }.start()
 //
+
+            if(readStan == null){
+                stan = 1117
+            }
+
+        }
+
+    override fun onResume() {
+        super.onResume()
+
+        btnSetAmount?.setOnClickListener{
+            amount = addAmount?.getText().toString()
+            //            output1?.setText("Amont : " + amount);
+            //            Toast.makeText(applicationContext,"Time out!!",Toast.LENGTH_SHORT).show()
+
+            output1?.setText("Amount: " + amount)
+            Log.d("log_tag", "input amount :  " + amount)
+            Log.i("log_tag", "Previous stan :  " + stan)
 
             btnConnect?.setOnClickListener{
 
@@ -116,7 +165,7 @@ class MainActivity : AppCompatActivity() {
                     sendPacket(saleMsg)
                     Log.i("log_tag", "sale: " + saleMsg.toString())
                     Log.i("log_tag", "reverseFlag:  " + reverseFlag)
-    //                Log.i("log_tag", "else" + reverseFlag)
+                    //                Log.i("log_tag", "else" + reverseFlag)
 
                     runOnUiThread {
                         output2?.setText("Sale packet:  " + saleMsg.toString())
@@ -137,45 +186,15 @@ class MainActivity : AppCompatActivity() {
 
             }
 
-            btnSetAmount?.setOnClickListener{
-                amount = addAmount?.getText().toString()
-    //            output1?.setText("Amont : " + amount);
-    //            Toast.makeText(applicationContext,"Time out!!",Toast.LENGTH_SHORT).show()
-
-                Thread{
-                        accessDatabase()
-                        readStan = saleDAO?.getSale()?.STAN
-
-                 }.start()
-
-//                Log.i("log_tag","readSTAN : " + readStan)
-
-                if(readStan == null){
-                    stan = 1117
-                }
-
-                output1?.setText("Amount: " + amount)
-                Log.d("log_tag", "input amount :  " + amount)
-                Log.i("log_tag", "Previous stan :  " + stan)
-            }
-
-    //        Thread{
-    //            val db = Room.databaseBuilder(
-    //                applicationContext,AppDatabase::class.java,"appDB"
-    //            ).build()
-    //
-    //            Log.i("SQLiteDebug","write")
-    //            val reversal = db.reversalDao()
-    //            val item = ReversalEntity("0","123456")
-    //
-    //            reversal.insertAllReversal(item)
-    //
-    //            Log.i("SQLiteDebug","read")
-    //            val reversalList = reversal.getReversal()
-    //
-    //        }
-
         }
+
+    }
+
+        override fun onStop() {
+            super.onStop()
+            EventBus.getDefault().unregister(this)
+        }
+
 
         fun accessDatabase(){
 
@@ -304,15 +323,7 @@ class MainActivity : AppCompatActivity() {
 
         }
 
-        override fun onStart() {
-            super.onStart()
-            EventBus.getDefault().register(this)
-        }
 
-        override fun onStop() {
-            super.onStop()
-            EventBus.getDefault().unregister(this)
-        }
 
         fun sendPacket(packet: ISOMessage?){
             Thread {
