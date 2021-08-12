@@ -138,15 +138,13 @@ class MainActivity : AppCompatActivity() {
             }
 
             btnSetAmount?.setOnClickListener{
-                amount = addAmount?.getText().toString();
+                amount = addAmount?.getText().toString()
     //            output1?.setText("Amont : " + amount);
     //            Toast.makeText(applicationContext,"Time out!!",Toast.LENGTH_SHORT).show()
 
                 Thread{
-
                         accessDatabase()
                         readStan = saleDAO?.getSale()?.STAN
-
 
                  }.start()
 
@@ -268,7 +266,7 @@ class MainActivity : AppCompatActivity() {
                     }.start()
 
                 }
-//
+
             }else{
 
                 if(responseCode == "3934"){
